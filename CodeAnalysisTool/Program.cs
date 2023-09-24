@@ -72,10 +72,10 @@ namespace CodeAnalysisTool
 
     class CodeAnalyzer
     {
-        public bool CheckIndentation(string filePath)
+        public List<string> CheckIndentation(string filePath)
         {
             string[] lines = File.ReadAllLines(filePath);
-            bool hasIndentationIssues = false;
+            List<string> indentationIssues = new List<string>();
 
             for (int lineNumber = 0; lineNumber < lines.Length; lineNumber++)
             {
@@ -83,24 +83,24 @@ namespace CodeAnalysisTool
                 string indentationPattern = @"^\s*";
                 Match match = Regex.Match(line, indentationPattern);
 
-                // Check for indentation of 4 spaces per level
                 if (match.Success && match.Length % 4 != 0)
                 {
-                    Console.WriteLine($"Indentation issue in file {filePath}, line {lineNumber + 1}: {line}");
-                    hasIndentationIssues = true;
+                    indentationIssues.Add($"Line {lineNumber + 1}: Indentation issue - {line}");
                 }
             }
 
-            return hasIndentationIssues;
+            return indentationIssues;
         }
 
-        public bool CheckVariableNaming(string filePath)
+
+        public List<string> CheckVariableNaming(string filePath)
         {
             string[] lines = File.ReadAllLines(filePath);
-            bool hasVariableNamingIssues = false;
+            List<string> variableNamingIssues = new List<string>();
 
-            foreach (string line in lines)
+            for (int lineNumber = 0; lineNumber < lines.Length; lineNumber++)
             {
+                string line = lines[lineNumber];
                 // Define your variable naming pattern (e.g., camelCase)
                 string variablePattern = @"\b[a-z][a-zA-Z0-9]*\b";
                 MatchCollection matches = Regex.Matches(line, variablePattern);
@@ -110,22 +110,22 @@ namespace CodeAnalysisTool
                     // Check if the variable name doesn't match the expected pattern
                     if (!IsCamelCase(match.Value))
                     {
-                        Console.WriteLine($"Variable naming issue in file {filePath}: {match.Value}");
-                        hasVariableNamingIssues = true;
+                        variableNamingIssues.Add($"Line {lineNumber + 1}: Variable naming issue - {match.Value}");
                     }
                 }
             }
 
-            return hasVariableNamingIssues;
+            return variableNamingIssues;
         }
 
-        public bool CheckMethodNaming(string filePath)
+        public List<string> CheckMethodNaming(string filePath)
         {
             string[] lines = File.ReadAllLines(filePath);
-            bool hasMethodNamingIssues = false;
+            List<string> methodNamingIssues = new List<string>();
 
-            foreach (string line in lines)
+            for (int lineNumber = 0; lineNumber < lines.Length; lineNumber++)
             {
+                string line = lines[lineNumber];
                 // Define your method naming pattern (e.g., PascalCase)
                 string methodPattern = @"(?<=\s)([A-Z][a-zA-Z0-9]*)\(";
                 MatchCollection matches = Regex.Matches(line, methodPattern);
@@ -135,25 +135,26 @@ namespace CodeAnalysisTool
                     // Check if the method name doesn't match the expected pattern
                     if (!IsPascalCase(match.Groups[1].Value))
                     {
-                        Console.WriteLine($"Method naming issue in file {filePath}: {match.Groups[1].Value}");
-                        hasMethodNamingIssues = true;
+                        methodNamingIssues.Add($"Line {lineNumber + 1}: Method naming issue - {match.Groups[1].Value}");
                     }
                 }
             }
 
-            return hasMethodNamingIssues;
+            return methodNamingIssues;
         }
 
+
         // Add more methods for other code quality checks as needed
-        public void AddIssuesToWordDocument(Body body, string filePath)
+        public void AddIssuesToWordDocument(Body body, string filePath, List<string> issues)
         {
-            // Example: Adding issues to the Word document with line numbers
             AddToWordDocument(body, $"Issues in file: {filePath}");
-            // You can add more issue details here, including line numbers.
-            AddToWordDocument(body, "Issue 1 - Line 12: Indentation issue");
-            AddToWordDocument(body, "Issue 2 - Line 25: Variable naming issue");
-            AddToWordDocument(body, "Issue 3 - Line 40: Method naming issue");
+
+            for (int i = 0; i < issues.Count; i++)
+            {
+                AddToWordDocument(body, $"Issue {i + 1} - {issues[i]}");
+            }
         }
+
 
         public void AddToWordDocument(Body body, string text)
         {
